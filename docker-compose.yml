@@ -1,8 +1,8 @@
 
 services:
-  gpu_vm_exporter:
+  gpu-gateway-exporter:
     build: .
-    container_name: gpu-vm-metrics-exporter
+    container_name: gpu-gateway-exporter
     environment:
       DB_HOST: ${DB_HOST}
       DB_NAME: ${DB_NAME}

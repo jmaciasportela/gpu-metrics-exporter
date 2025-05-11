@@ -1,3 +1,19 @@
+# -------------------------------------------------------------------------- #
+# Copyright 2002-2025, OpenNebula Project, OpenNebula Systems                #
+#                                                                            #
+# Licensed under the Apache License, Version 2.0 (the "License"); you may    #
+# not use this file except in compliance with the License. You may obtain    #
+# a copy of the License at                                                   #
+#                                                                            #
+# http://www.apache.org/licenses/LICENSE-2.0                                 #
+#                                                                            #
+# Unless required by applicable law or agreed to in writing, software        #
+# distributed under the License is distributed on an "AS IS" BASIS,          #
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.   #
+# See the License for the specific language governing permissions and        #
+# limitations under the License.                                             #
+#--------------------------------------------------------------------------- #
+
 import time
 import logging
 import concurrent.futures
@@ -27,10 +43,10 @@ def ensure_script_exists(conn):
 
     logging.info(f"Uploading script to {conn.host}")
     try:
-        # Copiar archivo local a remoto
+        # Copy script to remote
         conn.put(f'./scripts/{REMOTE_SCRIPT}', remote=f"/tmp/{REMOTE_SCRIPT}")
 
-        # (Opcional) Dar permisos de ejecución
+        # Execution permissions
         conn.run(f"chmod +x /tmp/{REMOTE_SCRIPT}")
     except FileNotFoundError as e:
         print(f"Local file not found: {e}")
@@ -51,7 +67,6 @@ def run_remote_metrics_command(host, vm_id):
                 logging.warning(f"Remote command for VM {vm_id} on host {host} exited with code {result.return_code}")
                 return None
     except Exception as e:
-        #logging.error(f"Error fetching metrics from {host} for VM {vm_id}: {str(e)}")
         logging.error(f"Error fetching metrics from {host} for VM {vm_id}")
         return None
 

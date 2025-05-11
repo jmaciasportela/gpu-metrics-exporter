@@ -25,7 +25,7 @@ While the default use case focuses on NVIDIA GPU metrics, this gateway can be ad
 
 ### ✅ ONE Host 
 
-- Access through SSH using RSA Keys  
+- Access through ONE FE and ONE Host with SSH using RSA Keys  
 - BASH
 - virsh + qemu-agent
 
@@ -33,19 +33,87 @@ While the default use case focuses on NVIDIA GPU metrics, this gateway can be ad
 
 Each VM from which you want to collect metrics must have:
 
-- A running Prometheus exporter ([`nvidia_gpu_exporter`](https://github.com/utkuozdemir/nvidia_gpu_exporter))
+- A running Prometheus exporter ([`nvidia_gpu_exporter`](https://github.com/utkuozdemir/nvidia_gpu_exporter)). See ANNEX A. 
 - `qemu-guest-agent` installed and running (for auto-discovery)
-
 
 ## How to run it
 
 ### Docker
 
+```
+docker build -t gpu-gateway-exporter .
+
+docker run -tid --env-file .env -v /var/lib/one/.ssh/id_rsa:/root/.ssh/id_rsa_oneadmin:ro --network host --name gpu-gateway-exporter gpu-gateway-exporter
+```
+
+### Docker Compose
+
+```
+docker compose up -d
+```
+
 
 ### Systemd
 
 
-## ANNEX: Script to install the exporter on the VM
+
+## 📡 Prometheus Configuration
+
+To collect GPU metrics from the Gateway Exporter, you need to configure Prometheus to scrape its `/metrics` endpoint.
+
+---
+
+### 🔧 Add a New Job to `prometheus.yml`
+
+Edit your Prometheus configuration file (typically located at `/etc/prometheus/prometheus.yml`) and add the following job under `scrape_configs`:
+
+```yaml
+scrape_configs:
+  - job_name: 'nvidia-smi-vm'
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    static_configs:
+      - targets: ['<exporter-host>:9835']
+```
+
+* scrape_interval: How often Prometheus scrapes the exporter. Default is 1 minute, but we recommend reducing it to 15 seconds for near-real-time GPU metrics.
+
+* scrape_timeout: How long Prometheus will wait for a response before failing the scrape. It must be less than or equal to scrape_interval.
+
+Replace <exporter-host> with the hostname or IP address of the server where your GPU Gateway Exporter is running.
+
+If Prometheus and the exporter are running on the same host, use localhost:9835 by default.
+
+
+## 📊 Grafana Integration
+
+This project includes a preconfigured Grafana dashboard for visualizing GPU metrics collected by the gateway exporter. It allows filtering by virtual machine (`vm_id`) and GPU (`uuid`), making it easy to explore GPU usage across multiple VMs.
+
+### 🧭 How to Import the Dashboard
+
+1. Log in to your existing Grafana instance.
+2. In the sidebar, go to **Dashboards > New > Import**.
+3. Click **Upload JSON file** and select the file: grafana/nvidia_smi_vms.json
+4. Choose your **Prometheus** data source from the dropdown.
+5. Click **Import**.
+
+### 🎛️ Using the Dashboard Filters
+
+At the top of the dashboard, you'll find two dropdown filters:
+
+#### 1. `vm_id`
+- This filter allows you to select one or more virtual machines from which metrics are being collected.
+- It corresponds to the `vm_id` label added by the gateway.
+
+#### 2. `uuid` (optional)
+- This allows you to filter by GPU device within the selected VM(s).
+- Useful when VMs have multiple GPUs and you want per-GPU visibility.
+
+
+![nvidia-smi-vms](grafana/nvidia-smi-vm.jpg)
+
+
+## ANNEX A: Script to install the exporter on the VM
 
 ```
 #!/bin/bash
