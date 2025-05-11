@@ -1,0 +1,21 @@
+
+services:
+  gpu_vm_exporter:
+    build: .
+    container_name: gpu-vm-metrics-exporter
+    environment:
+      DB_HOST: ${DB_HOST}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      SCAN_INTERVAL: ${SCAN_INTERVAL} 
+      SSH_USER: ${SSH_USER}
+      SSH_KEY: "/root/.ssh/id_rsa_oneadmin"
+      REMOTE_SCRIPT: ${REMOTE_SCRIPT}
+      LOG_TO_FILE: ${LOG_TO_FILE}
+      LOG_TO_CONSOLE: ${LOG_TO_CONSOLE}
+      LOG_FILE_PATH: ${LOG_FILE_PATH}
+      EXPORTER_PORT: ${EXPORTER_PORT}
+    volumes:
+      - ${SSH_KEY}:/root/.ssh/id_rsa_oneadmin:ro
+    network_mode: host

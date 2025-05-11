@@ -1,0 +1,14 @@
+[Unit]
+Description=GPU Gateway Exporter
+After=network.target
+
+[Service]
+EnvironmentFile=/opt/gpu-gateway-exporter/.env
+ExecStart=/opt/gpu-gateway-exporter/run.sh
+WorkingDirectory=/opt/gpu-gateway-exporter
+Restart=always
+User=oneadmin
+Group=oneadmin
+
+[Install]
+WantedBy=multi-user.target
